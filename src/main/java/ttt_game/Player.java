@@ -23,4 +23,6 @@ public abstract class Player {
         this.nextMove = play();
         game.play(mark,nextMove);
     }
+
+    public abstract void feedback(int winnerMark);
 }

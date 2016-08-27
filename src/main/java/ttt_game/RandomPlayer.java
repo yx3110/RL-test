@@ -15,4 +15,7 @@ public class RandomPlayer extends Player {
         int[] freeCells = this.getGame().getFreeCells();
         return 0;
     }
+
+    public void feedback(int winnerMark) {
+    }
 }

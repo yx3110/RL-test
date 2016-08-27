@@ -12,6 +12,7 @@ public class Game {
     private boolean isOver = false;
     private int turn = 0;
 
+    public static final int trainingEpisodes = 5000;
     public static final int gamesPlayed = 500;
     public final static int SIZE = 3;
     public final static int FIELD = SIZE * SIZE;
@@ -21,10 +22,14 @@ public class Game {
     public final static int RANDOM = 2;
     public final static int NONE = 2;
 
-    public final static boolean training = false;
+    private static final String dataURL = "data";
+
+    @Getter
+    private final static boolean training = false;
+
     private Random random;
 
-    private Player winner;
+    private int winner;
 
     @Getter
     private Player[] players;
@@ -33,6 +38,7 @@ public class Game {
 
     private Player mainPlayer;
     private Player secPlayer;
+    @Getter
     private int[] board;
 
 
@@ -46,8 +52,12 @@ public class Game {
 
     public static void Main(String[] args) {
         Player secPlayer = new RandomPlayer();
-        Player mainPlayer = new DPRLPlayer();
+        Player mainPlayer = new DPRLPlayer(dataURL);
         Game game = new Game(mainPlayer, secPlayer);
+        mainPlayer.setGame(game);
+        secPlayer.setGame(game);
+        mainPlayer.setMark(CIRCLE);
+        secPlayer.setMark(CROSS);
 
         int win = 0;
         int lose = 0;
@@ -55,18 +65,23 @@ public class Game {
         if (!training) {
             for (int i = 0; i < gamesPlayed; i++) {
                 game.match(RANDOM);
-                if (game.winner == mainPlayer) win++;
-                else if (game.winner == secPlayer) lose++;
+                if (game.winner == mainPlayer.getMark()) win++;
+                else if (game.winner == secPlayer.getMark()) lose++;
                 else draw++;
             }
             System.out.print("Win:"+win+"\nLose:"+lose+"\ndraw:"+draw+"\n");
         }else{
-
+            for(int i = 0;i<trainingEpisodes;i++){
+                game.match(RANDOM);
+                mainPlayer.feedback(game.winner);
+                }
         }
     }
 
+
+
     public void match(int mode) {
-        winner = null;
+        winner = 0;
         board = new int[FIELD];
         switch (mode) {
             case CROSS:
@@ -108,7 +123,10 @@ public class Game {
                 if (cur == NONE || target != cur) {
                     break;
                 }
-                if (j + SIZE * i == SIZE * (i + 1) - 1 && res) return res;
+                if (j + SIZE * i == SIZE * (i + 1) - 1 && res) {
+                    winner = board[SIZE*i];
+                    return res;
+                }
             }
         }
         // check rows
@@ -120,7 +138,10 @@ public class Game {
                 if (cur == NONE || target != cur) {
                     break;
                 }
-                if (j == SIZE - 1 && res) return res;
+                if (j == SIZE - 1 && res) {
+                    winner = board[i];
+                    return res;
+                }
             }
         }
         //check diagonal
@@ -132,12 +153,13 @@ public class Game {
                 break;
             }
             if (i == SIZE - 1 && res) {
+                winner = board[0];
                 return res;
             }
         }
 
         target = board[SIZE - 1];
-        for (int i = 0; i < SIZE; i++) {
+        for (int i = 1; i <= SIZE; i++) {
             res = true;
             int cur = board[i * SIZE - i];
             if (cur == NONE || target != cur) {
@@ -145,12 +167,28 @@ public class Game {
             }
             if (i == SIZE - 1 && res) return res;
         }
+        if(this.getFreeCells().length==0){
+            winner = board[SIZE-1];
+            return true;
+        }
         return false;
     }
 
     public int[] getFreeCells() {
-
-        int[] res = new int[1];
+        int size = 0;
+        for(int i = 0;i<board.length;i++){
+            if(board[i] == NONE){
+                size++;
+            }
+        }
+        int[] res = new int[size];
+        int index =0;
+        for(int i =0;i<board.length;i++){
+            if(board[i]!=NONE){
+                res[index] = board[i];
+                index++;
+            }
+        }
         return res;
     }
 }
