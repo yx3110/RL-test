@@ -22,8 +22,8 @@ public class DPRLPlayer extends Player {
     public static final int loseReward = -1;
     public static final int drawReward = 0;
 
-    public DPRLPlayer(String mapAddr){
-        this.valueMap = fileIO.loadMap(mapAddr);
+    public DPRLPlayer(){
+        this.valueMap = new HashMap<StateActionPair, Double>();
         this.stateActionSequence = new LinkedList<StateActionPair>();
         random = new Random();
     }
@@ -43,7 +43,7 @@ public class DPRLPlayer extends Player {
                     valueMap.put(curPair, (double) winReward);
                 }
             }
-        }else if(winnerMark ==0){
+        }else if(winnerMark == 2){
             for(StateActionPair curPair:stateActionSequence){
                 if(valueMap.containsKey(curPair)){
                     valueMap.put(curPair,valueMap.get(curPair)+drawReward);
@@ -60,20 +60,33 @@ public class DPRLPlayer extends Player {
                 }
             }
         }
+        this.stateActionSequence = new LinkedList<StateActionPair>();
+    }
+
+    public void saveLearningResult() {
+        fileIO.saveMap(valueMap);
+    }
+
+    public void loadLearningResult(String dataURL) {
+        this.valueMap = fileIO.loadMap(dataURL);
     }
 
 
-
     public int playTrained(){
-        int[] availableMoves = this.getGame().getFreeCells();
+        List<Integer> availableMoves = this.getGame().getFreeCells();
         int res = 0;
         double val = 0;
-        for(int i = 0;i<availableMoves.length;i++){
-            int curMove = availableMoves[i];
+        for(int i = 0;i<availableMoves.size();i++){
+            int curMove = availableMoves.get(i);
             int[] curState = this.getGame().getBoard();
             StateActionPair curPair = new StateActionPair(curState,curMove);
-            double curVal = getValueMap().get(curPair);
-            if(curVal>val){
+            double curVal;
+            if(!valueMap.containsKey(curPair)){
+                curVal = 0;
+            }else {
+                curVal = getValueMap().get(curPair);
+            }
+            if(curVal>=val){
                 res = curMove;
                 val = curVal;
             }
@@ -82,8 +95,8 @@ public class DPRLPlayer extends Player {
     }
     public int playTraining(){
         int[] state = getGame().getBoard();
-        int[] availableMoves = this.getGame().getFreeCells();
-        int res = availableMoves[random.nextInt(availableMoves.length)];
+        List<Integer> availableMoves = this.getGame().getFreeCells();
+        int res = availableMoves.get(random.nextInt(availableMoves.size()));
         this.stateActionSequence.add(new StateActionPair(state,res));
         return res;
     }

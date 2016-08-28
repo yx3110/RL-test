@@ -1,18 +1,18 @@
 package ttt_game;
 
+import Util.StateActionPair;
 import com.sun.glass.ui.Size;
 import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by Yang Xu on 2016/8/24.
  */
 public class Game {
-    private boolean isOver = false;
-    private int turn = 0;
 
-    public static final int trainingEpisodes = 5000;
+    public static final int trainingEpisodes = 50000;
     public static final int gamesPlayed = 500;
     public final static int SIZE = 3;
     public final static int FIELD = SIZE * SIZE;
@@ -22,10 +22,10 @@ public class Game {
     public final static int RANDOM = 2;
     public final static int NONE = 2;
 
-    private static final String dataURL = "data";
+    private static final String dataURL = "C:\\Users\\Yang Xu\\Desktop\\RL-test\\data.ser";
 
     @Getter
-    private final static boolean training = true;
+    private final static boolean training = false;
 
     private Random random;
 
@@ -37,6 +37,7 @@ public class Game {
     private Player curPlayer;
 
     private Player mainPlayer;
+    @Setter
     private Player secPlayer;
     @Getter
     private int[] board;
@@ -51,39 +52,54 @@ public class Game {
     }
 
     public static void main(String[] args) {
-        Player secPlayer = new RandomPlayer();
-        Player mainPlayer = new DPRLPlayer(dataURL);
-        Game game = new Game(mainPlayer, secPlayer);
-        mainPlayer.setGame(game);
-        secPlayer.setGame(game);
-        mainPlayer.setMark(CIRCLE);
-        secPlayer.setMark(CROSS);
-        game.players[CIRCLE] = mainPlayer;
-        game.players[CROSS] = secPlayer;
+
+        Player main = new DPRLPlayer();
+        Player sec = new RandomPlayer();
+        Game game = new Game(main, sec);
+        game.mainPlayer.setGame(game);
+        game.secPlayer.setGame(game);
+        game.mainPlayer.setMark(CIRCLE);
+        game.secPlayer.setMark(CROSS);
+        game.players[CIRCLE] = game.mainPlayer;
+        game.players[CROSS] = game.secPlayer;
 
         int win = 0;
         int lose = 0;
         int draw = 0;
         if (!training) {
+            game.mainPlayer.loadLearningResult(dataURL);
             for (int i = 0; i < gamesPlayed; i++) {
                 game.match(RANDOM);
-                if (game.winner == mainPlayer.getMark()) win++;
-                else if (game.winner == secPlayer.getMark()) lose++;
+                if (game.winner == game.mainPlayer.getMark()) win++;
+                else if (game.winner == game.secPlayer.getMark()) lose++;
                 else draw++;
             }
-            System.out.print("Win:"+win+"\nLose:"+lose+"\ndraw:"+draw+"\n");
-        }else{
-            for(int i = 0;i<trainingEpisodes;i++){
+            System.out.print("Win:" + win + "\nLose:" + lose + "\ndraw:" + draw + "\n");
+        } else {
+            for (int i = 0; i < trainingEpisodes; i++) {
                 game.match(RANDOM);
-                mainPlayer.feedback(game.winner);
-                }
+                game.mainPlayer.feedback(game.winner);
+            }
+
+            //selfPlay
+            game.mainPlayer.saveLearningResult();
+            Player selfPlayer = new DPRLPlayer();
+            selfPlayer.setGame(game);
+            selfPlayer.setMark(CROSS);
+            game.setSecPlayer(selfPlayer);
+            game.players[CROSS] = game.secPlayer;
+            for (int i = 0; i < trainingEpisodes; i++) {
+                game.match(RANDOM);
+                game.mainPlayer.feedback(game.winner);
+                game.secPlayer.feedback(game.winner);
+            }
+            game.mainPlayer.saveLearningResult();
         }
     }
 
 
-
     public void match(int mode) {
-        winner = 0;
+        winner = NONE;
         board = new int[FIELD];
         switch (mode) {
             case CROSS:
@@ -108,8 +124,10 @@ public class Game {
     }
 
     public boolean play(int mark, int nextMove) {
+        System.out.println(mark + " next move at position:" + nextMove);
         if (nextMove < FIELD && nextMove >= 0 && board[nextMove] == NONE && mark != NONE) {
             this.board[nextMove] = mark;
+            System.out.println(curPlayer.getMark() + " played at position:" + nextMove);
             return true;
         } else return false;
     }
@@ -120,18 +138,18 @@ public class Game {
         for (int i = 0; i < SIZE; i++) {
             res = true;
             int target = board[SIZE * i];
-            for (int j = 0; j < SIZE * i + SIZE; j++) {
+            for (int j = 0; j < SIZE; j++) {
                 int cur = board[j + SIZE * i];
                 if (cur == NONE || target != cur) {
                     break;
                 }
-                if (j + SIZE * i == SIZE * (i + 1) - 1 && res) {
-                    winner = board[SIZE*i];
+                if (j + SIZE * i == SIZE * (i + 1) - 1) {
+                    winner = target;
                     return res;
                 }
             }
         }
-        // check rows
+        // check columns
         for (int i = 0; i < SIZE; i++) {
             res = true;
             int target = board[i];
@@ -154,7 +172,7 @@ public class Game {
             if (cur == NONE || target != cur) {
                 break;
             }
-            if (i == SIZE - 1 && res) {
+            if (i == SIZE - 1) {
                 winner = board[0];
                 return res;
             }
@@ -169,26 +187,18 @@ public class Game {
             }
             if (i == SIZE - 1 && res) return res;
         }
-        if(this.getFreeCells().length==0){
-            winner = board[SIZE-1];
+        if (this.getFreeCells().size() == 0) {
+            winner = NONE;
             return true;
         }
         return false;
     }
 
-    public int[] getFreeCells() {
-        int size = 0;
-        for(int i = 0;i<board.length;i++){
-            if(board[i] == NONE){
-                size++;
-            }
-        }
-        int[] res = new int[size];
-        int index =0;
-        for(int i =0;i<board.length;i++){
-            if(board[i]!=NONE){
-                res[index] = board[i];
-                index++;
+    public List<Integer> getFreeCells() {
+        List<Integer> res = new LinkedList<Integer>();
+        for (int i = 0; i < board.length; i++) {
+            if (board[i] == NONE) {
+                res.add(i);
             }
         }
         return res;

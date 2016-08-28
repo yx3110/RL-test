@@ -25,4 +25,7 @@ public abstract class Player {
     }
 
     public abstract void feedback(int winnerMark);
+    public abstract void saveLearningResult();
+
+    public abstract void loadLearningResult(String dataURL);
 }

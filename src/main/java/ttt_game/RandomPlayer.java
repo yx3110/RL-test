@@ -3,6 +3,7 @@ package ttt_game;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -12,11 +13,19 @@ public class RandomPlayer extends Player {
 
     public int play() {
         Random random = new Random();
-        int[] freeCells = this.getGame().getFreeCells();
-        int index = random.nextInt(freeCells.length);
-        return freeCells[index];
+        List<Integer> freeCells = this.getGame().getFreeCells();
+        int index = random.nextInt(freeCells.size());
+        return freeCells.get(index);
     }
 
     public void feedback(int winnerMark) {
+    }
+
+    public void saveLearningResult() {
+
+    }
+
+    public void loadLearningResult(String dataURL) {
+
     }
 }
