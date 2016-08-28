@@ -5,10 +5,7 @@ import Util.StateActionPair;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Yang Xu on 2016/8/24.
@@ -18,10 +15,19 @@ public class DPRLPlayer extends Player {
     private Map<StateActionPair,Double> valueMap;
     private List<StateActionPair> stateActionSequence;
 
+    private Random random;
+
     private static final FileIO fileIO = new FileIO();
     public static final int winReward = 1;
     public static final int loseReward = -1;
     public static final int drawReward = 0;
+
+    public DPRLPlayer(String mapAddr){
+        this.valueMap = fileIO.loadMap(mapAddr);
+        this.stateActionSequence = new LinkedList<StateActionPair>();
+        random = new Random();
+    }
+
     public int play() {
         if(this.getGame().isTraining()){
             return playTraining();
@@ -56,10 +62,7 @@ public class DPRLPlayer extends Player {
         }
     }
 
-    public DPRLPlayer(String mapAddr){
-        this.valueMap = fileIO.loadMap(mapAddr);
-        this.stateActionSequence = new LinkedList<StateActionPair>();
-    }
+
 
     public int playTrained(){
         int[] availableMoves = this.getGame().getFreeCells();
@@ -78,7 +81,10 @@ public class DPRLPlayer extends Player {
         return res;
     }
     public int playTraining(){
-        return 0;
+        int[] state = getGame().getBoard();
+        int[] availableMoves = this.getGame().getFreeCells();
+        int res = availableMoves[random.nextInt(availableMoves.length)];
+        this.stateActionSequence.add(new StateActionPair(state,res));
+        return res;
     }
-
 }

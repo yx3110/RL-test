@@ -25,7 +25,7 @@ public class Game {
     private static final String dataURL = "data";
 
     @Getter
-    private final static boolean training = false;
+    private final static boolean training = true;
 
     private Random random;
 
@@ -50,7 +50,7 @@ public class Game {
         random = new Random();
     }
 
-    public static void Main(String[] args) {
+    public static void main(String[] args) {
         Player secPlayer = new RandomPlayer();
         Player mainPlayer = new DPRLPlayer(dataURL);
         Game game = new Game(mainPlayer, secPlayer);
@@ -58,6 +58,8 @@ public class Game {
         secPlayer.setGame(game);
         mainPlayer.setMark(CIRCLE);
         secPlayer.setMark(CROSS);
+        game.players[CIRCLE] = mainPlayer;
+        game.players[CROSS] = secPlayer;
 
         int win = 0;
         int lose = 0;

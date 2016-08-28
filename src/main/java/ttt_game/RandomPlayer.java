@@ -13,7 +13,8 @@ public class RandomPlayer extends Player {
     public int play() {
         Random random = new Random();
         int[] freeCells = this.getGame().getFreeCells();
-        return 0;
+        int index = random.nextInt(freeCells.length);
+        return freeCells[index];
     }
 
     public void feedback(int winnerMark) {
