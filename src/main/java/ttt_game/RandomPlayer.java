@@ -28,4 +28,9 @@ public class RandomPlayer extends Player {
     public void loadLearningResult(String dataURL) {
 
     }
+
+    @Override
+    public void printTable() {
+
+    }
 }

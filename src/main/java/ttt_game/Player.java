@@ -28,4 +28,6 @@ public abstract class Player {
     public abstract void saveLearningResult();
 
     public abstract void loadLearningResult(String dataURL);
+
+    public abstract void printTable();
 }

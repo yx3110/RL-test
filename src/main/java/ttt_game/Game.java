@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class Game {
 
-    public static final int trainingEpisodes = 50000;
+    public static final int trainingEpisodes = 100000;
     public static final int gamesPlayed = 500;
     public final static int SIZE = 3;
     public final static int FIELD = SIZE * SIZE;
@@ -22,7 +22,7 @@ public class Game {
     public final static int RANDOM = 2;
     public final static int NONE = 2;
 
-    private static final String dataURL = "C:\\Users\\Yang Xu\\Desktop\\RL-test\\data.ser";
+    private static final String dataURL = "/Users/eclipse/RL-test/data.ser";
 
     @Getter
     private final static boolean training = false;
@@ -74,6 +74,7 @@ public class Game {
                 else if (game.winner == game.secPlayer.getMark()) lose++;
                 else draw++;
             }
+            game.mainPlayer.printTable();
             System.out.print("Win:" + win + "\nLose:" + lose + "\ndraw:" + draw + "\n");
         } else {
             for (int i = 0; i < trainingEpisodes; i++) {
@@ -81,8 +82,10 @@ public class Game {
                 game.mainPlayer.feedback(game.winner);
             }
 
-            //selfPlay
             game.mainPlayer.saveLearningResult();
+
+            /*
+            //selfPlay
             Player selfPlayer = new DPRLPlayer();
             selfPlayer.setGame(game);
             selfPlayer.setMark(CROSS);
@@ -93,7 +96,8 @@ public class Game {
                 game.mainPlayer.feedback(game.winner);
                 game.secPlayer.feedback(game.winner);
             }
-            game.mainPlayer.saveLearningResult();
+
+            game.mainPlayer.saveLearningResult();*/
         }
     }
 

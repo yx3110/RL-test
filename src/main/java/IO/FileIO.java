@@ -1,6 +1,7 @@
 package IO;
 
 import Util.StateActionPair;
+import Util.Values;
 import javafx.beans.property.ObjectProperty;
 
 import java.io.*;
@@ -15,7 +16,7 @@ import java.util.Properties;
 @SuppressWarnings("ALL")
 public class FileIO {
 
-    public static void saveMap(Map<StateActionPair,Double> map){
+    public static void saveMap(Map<StateActionPair, Values> map){
         try{
             FileOutputStream fileOut = new FileOutputStream("data.ser");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -27,12 +28,12 @@ public class FileIO {
         }
     }
 
-    public static HashMap<StateActionPair,Double> loadMap(String addr){
-        HashMap<StateActionPair,Double> res = null;
+    public static HashMap<StateActionPair,Values> loadMap(String addr){
+        HashMap<StateActionPair,Values> res = null;
         try{
             FileInputStream fileInputStream = new FileInputStream(addr);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            res = (HashMap<StateActionPair,Double>) objectInputStream.readObject();
+            res = (HashMap<StateActionPair,Values>) objectInputStream.readObject();
         }catch (Exception e){
             e.printStackTrace();
             return null;
