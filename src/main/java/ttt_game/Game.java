@@ -12,9 +12,9 @@ import java.util.*;
  */
 public class Game {
 
-    public static final int trainingEpisodes = 100000;
+    public static final int trainingEpisodes = 500000;
     public static final int gamesPlayed = 500;
-    public final static int SIZE = 3;
+    public final static int SIZE = 4;
     public final static int FIELD = SIZE * SIZE;
 
     public final static int CROSS = 0;
@@ -22,7 +22,7 @@ public class Game {
     public final static int RANDOM = 2;
     public final static int NONE = 2;
 
-    private static final String dataURL = "/Users/eclipse/RL-test/data.ser";
+    private static final String dataURL = "C:\\Users\\Yang Xu\\Desktop\\RL-test\\data.ser";
 
     @Getter
     private final static boolean training = false;
@@ -63,10 +63,10 @@ public class Game {
         game.players[CIRCLE] = game.mainPlayer;
         game.players[CROSS] = game.secPlayer;
 
-        int win = 0;
-        int lose = 0;
-        int draw = 0;
         if (!training) {
+            int win = 0;
+            int lose = 0;
+            int draw = 0;
             game.mainPlayer.loadLearningResult(dataURL);
             for (int i = 0; i < gamesPlayed; i++) {
                 game.match(RANDOM);
@@ -79,12 +79,11 @@ public class Game {
         } else {
             for (int i = 0; i < trainingEpisodes; i++) {
                 game.match(RANDOM);
+                System.out.println("winner:" + game.winner);
                 game.mainPlayer.feedback(game.winner);
             }
-
             game.mainPlayer.saveLearningResult();
-
-            /*
+/*
             //selfPlay
             Player selfPlayer = new DPRLPlayer();
             selfPlayer.setGame(game);
@@ -96,8 +95,8 @@ public class Game {
                 game.mainPlayer.feedback(game.winner);
                 game.secPlayer.feedback(game.winner);
             }
-
-            game.mainPlayer.saveLearningResult();*/
+            game.mainPlayer.saveLearningResult();
+    */
         }
     }
 
@@ -115,7 +114,6 @@ public class Game {
             case RANDOM:
                 curPlayer = players[random.nextInt(2)];
         }
-
         for (int i = 0; i < FIELD; i++) {
             board[i] = NONE;
         }
@@ -128,10 +126,9 @@ public class Game {
     }
 
     public boolean play(int mark, int nextMove) {
-        System.out.println(mark + " next move at position:" + nextMove);
         if (nextMove < FIELD && nextMove >= 0 && board[nextMove] == NONE && mark != NONE) {
             this.board[nextMove] = mark;
-            System.out.println(curPlayer.getMark() + " played at position:" + nextMove);
+
             return true;
         } else return false;
     }
@@ -149,6 +146,7 @@ public class Game {
                 }
                 if (j + SIZE * i == SIZE * (i + 1) - 1) {
                     winner = target;
+                    System.out.println("row win");
                     return res;
                 }
             }
@@ -163,7 +161,8 @@ public class Game {
                     break;
                 }
                 if (j == SIZE - 1 && res) {
-                    winner = board[i];
+                    winner = target;
+                    System.out.println("column win");
                     return res;
                 }
             }
@@ -177,7 +176,8 @@ public class Game {
                 break;
             }
             if (i == SIZE - 1) {
-                winner = board[0];
+                winner = target;
+                System.out.println("dia1 win");
                 return res;
             }
         }
@@ -189,17 +189,23 @@ public class Game {
             if (cur == NONE || target != cur) {
                 break;
             }
-            if (i == SIZE - 1 && res) return res;
+            if (i == SIZE) {
+                winner = target;
+                System.out.println("dia2 win");
+                return res;
+            }
+
         }
         if (this.getFreeCells().size() == 0) {
             winner = NONE;
+            System.out.println("draw");
             return true;
         }
         return false;
     }
 
     public List<Integer> getFreeCells() {
-        List<Integer> res = new LinkedList<Integer>();
+        List<Integer> res = new LinkedList<>();
         for (int i = 0; i < board.length; i++) {
             if (board[i] == NONE) {
                 res.add(i);
