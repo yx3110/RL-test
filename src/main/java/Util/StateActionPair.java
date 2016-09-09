@@ -1,5 +1,6 @@
 package Util;
 
+import lombok.Getter;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
@@ -10,10 +11,13 @@ import java.util.Arrays;
  */
 public class StateActionPair implements Serializable{
 
+    @Getter
     private int[] state;
+    @Getter
     private int action;
     public StateActionPair(int[] state,int action){
-        this.state = state;
+
+        this.state = Arrays.copyOf(state,state.length);
         this.action = action;
     }
 

@@ -23,13 +23,13 @@ public class DPRLPlayer extends Player {
     private static final FileIO fileIO = new FileIO();
     public static final double winReward = 1;
     public static final double loseReward = -1;
-    public static final double drawReward = 0.3;
+    public static final double drawReward = 0.5;
 
-    private static final double epsilon = 0.1;
+    private static final double epsilon = 0.8;
 
     public DPRLPlayer(){
         this.valueMap = new HashMap<>();
-        this.stateActionSequence = new LinkedList<>();
+        this.stateActionSequence = new ArrayList<>();
         random = new Random();
     }
 
@@ -53,7 +53,17 @@ public class DPRLPlayer extends Player {
 
 
     public void feedback(int winnerMark) {
-        if (winnerMark==this.getMark()){
+        for (int i=0;i<stateActionSequence.size();i++){
+            StateActionPair curPair = stateActionSequence.get(i);
+            for(int j=0;j<curPair.getState().length;j++){
+                System.out.print(curPair.getState()[j]+",");
+                if(j == curPair.getState().length-1){
+                    System.out.println(" ");
+                }
+            }
+            System.out.println(" Action:"+curPair.getAction());
+        }
+        if (winnerMark==getMark()){
             for(StateActionPair curPair:stateActionSequence){
                 updateTable(curPair,winReward);
             }
@@ -66,7 +76,7 @@ public class DPRLPlayer extends Player {
                 updateTable(curPair,loseReward);
             }
         }
-        this.stateActionSequence = new LinkedList<StateActionPair>();
+        this.stateActionSequence = new ArrayList<>();
     }
 
     public void saveLearningResult() {
@@ -79,8 +89,15 @@ public class DPRLPlayer extends Player {
 
     @Override
     public void printTable() {
-        for(Values curValues:valueMap.values()){
-            System.out.println("visited:" +curValues.getTimeVisited()+"rawValue:"+curValues.getRawValue()+"normalized:"+curValues.getNormalizedValue());
+        for(StateActionPair curPair:valueMap.keySet()){
+            Values curValues = valueMap.get(curPair);
+            for(int i=0;i<curPair.getState().length;i++){
+                System.out.print(curPair.getState()[i]+",");
+                if(i == curPair.getState().length-1){
+                    System.out.println(" ");
+                }
+            }
+            System.out.println(" Action:"+curPair.getAction()+" Visited:" +curValues.getTimeVisited()+" rawValue:"+curValues.getRawValue()+" normalized:"+curValues.getNormalizedValue());
         }
     }
 
@@ -99,7 +116,7 @@ public class DPRLPlayer extends Player {
             }else {
                 curVal = getValueMap().get(curPair).getNormalizedValue();
             }
-            if(curVal>=val){
+            if(curVal>val){
                 res = curMove;
                 val = curVal;
             }
@@ -109,22 +126,32 @@ public class DPRLPlayer extends Player {
     public int playTraining(){
         int[] state = getGame().getBoard();
         List<Integer> availableMoves = this.getGame().getFreeCells();
+        // int res = availableMoves.get(random.nextInt(availableMoves.size()));
+
+        //epsilon
         int res = availableMoves.get(0);
         double epsilonTest = ThreadLocalRandom.current().nextDouble(0, 1);
-        if(epsilonTest>epsilon){
+        if(epsilonTest>=epsilon){
             res = availableMoves.get(random.nextInt(availableMoves.size()));
         }else{
+            boolean contains = false;
             double val = 0;
             for(int i =0;i<availableMoves.size();i++){
                 int curAction = availableMoves.get(i);
                 StateActionPair curPair = new StateActionPair(state,curAction);
                 if(valueMap.containsKey(curPair)&&valueMap.get(curPair).getNormalizedValue()>val){
+                    contains = true;
                     res = availableMoves.get(i);
                     val = valueMap.get(curPair).getNormalizedValue();
                 }
             }
+            if (!contains){
+                res = availableMoves.get(random.nextInt(availableMoves.size()));
+            }
         }
-        this.stateActionSequence.add(new StateActionPair(state,res));
+
+        stateActionSequence.add(new StateActionPair(state,res));
+
         return res;
     }
 

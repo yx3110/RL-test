@@ -26,16 +26,13 @@ public class Values implements Serializable {
         normalizedValue = (rawValue / timeVisited) ;
     }
 
-    private void addRawValue(double add){
-        rawValue+=add;
+    private void addRawValue(double change){
+        rawValue = rawValue+change;
     }
 
-    private void incrementVisit(){
-        timeVisited++;
-    }
     public void updateValue(double change){
         addRawValue(change);
-        incrementVisit();
+        timeVisited++;
         normalize();
     }
 }

@@ -50,10 +50,23 @@ public class Game {
         this.secPlayer = SecPlayer;
         random = new Random();
     }
-
+    public Game(MPPlayer MainPlayer,Player SecPlayer){
+        this.mainPlayer = MainPlayer;
+        this.board = new int[FIELD];
+        this.players = new Player[2];
+        this.secPlayer = SecPlayer;
+        random = new Random();
+    }
+    public Game(DPRLPlayer MainPlayer,Player SecPlayer){
+        this.mainPlayer = MainPlayer;
+        this.board = new int[FIELD];
+        this.players = new Player[2];
+        this.secPlayer = SecPlayer;
+        random = new Random();
+    }
     public static void main(String[] args) {
 
-        Player main = new DPRLPlayer();
+        DPRLPlayer main = new DPRLPlayer();
         Player sec = new RandomPlayer();
         Game game = new Game(main, sec);
         game.mainPlayer.setGame(game);
@@ -83,7 +96,7 @@ public class Game {
                 game.mainPlayer.feedback(game.winner);
             }
             game.mainPlayer.saveLearningResult();
-/*
+    /*
             //selfPlay
             Player selfPlayer = new DPRLPlayer();
             selfPlayer.setGame(game);
